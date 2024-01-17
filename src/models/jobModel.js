@@ -1,20 +1,88 @@
-const pool = require('../db'); // Importa el archivo de configuración de la base de datos
+const pool = require("../db"); // Importa el archivo de configuración de la base de datos
 
 const getJobs = async () => {
-  const { rows } = await pool.query('SELECT * FROM jobs');
+  const { rows } = await pool.query("SELECT * FROM jobs ORDER BY id ASC");
   return rows;
 };
 
 const createJob = async (jobData) => {
-  const { title, company, type, salaryRange } = jobData;
+  const {
+    title,
+    category,
+    type,
+    aboutjob,
+    mandatoryrequirements,
+    optionalrequirements,
+    salaryrange,
+    company,
+    aboutcompany,
+    posteddate,
+    candidates,
+    track,
+    close,
+  } = jobData;
   const { rows } = await pool.query(
-    'INSERT INTO jobs (title, company, type, salary_range) VALUES ($1, $2, $3, $4) RETURNING *',
-    [title, company, type, salaryRange]
+    "INSERT INTO jobs (title, category, type, aboutjob, mandatoryrequirements,optionalrequirements,salaryrange,company,aboutcompany,posteddate,candidates,track,close) VALUES ($1, $2, $3, $4, $5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *",
+    [
+      title,
+      category,
+      type,
+      aboutjob,
+      mandatoryrequirements,
+      optionalrequirements,
+      salaryrange,
+      company,
+      aboutcompany,
+      posteddate,
+      candidates,
+      track,
+      close,
+    ]
   );
+  return rows[0];
+};
+
+const updateJob = async (id, jobData) => {
+  const {
+    title,
+    category,
+    type,
+    aboutjob,
+    mandatoryrequirements,
+    optionalrequirements,
+    salaryrange,
+    company,
+    aboutcompany,
+    posteddate,
+    candidates,
+    track,
+    close,
+  } = jobData;
+  const { rows } = await pool.query(
+    "UPDATE jobs SET title = $1, category = $2, type = $3, aboutjob = $4, mandatoryrequirements = $5, optionalrequirements = $6, salaryrange = $7, company = $8, aboutcompany = $9, posteddate = $10, candidates = $11, track = $12, close = $13 WHERE id = $14 RETURNING *",
+    [
+      title,
+      category,
+      type,
+      aboutjob,
+      mandatoryrequirements,
+      optionalrequirements,
+      salaryrange,
+      company,
+      aboutcompany,
+      new Date(posteddate), // Asegúrate de que posteddate sea una fecha ISO válida o conviértela a objeto Date
+      candidates,
+      track,
+      close,
+      id, // Asegúrate de pasar el ID del trabajo como parte de la solicitud para actualizar el registro correcto
+    ]
+  );
+
   return rows[0];
 };
 
 module.exports = {
   getJobs,
-  createJob
+  createJob,
+  updateJob
 };
