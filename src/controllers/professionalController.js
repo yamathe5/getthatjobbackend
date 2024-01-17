@@ -1,5 +1,5 @@
 // professionalController.js
-const { findProfessionalByEmail } = require("../models/professionalModel");
+const { findProfessionalByEmail, createProfessional } = require("../models/professionalModel");
 
 const loginProfessional = async (req, res) => {
   const { email, password } = req.body;
@@ -27,4 +27,31 @@ const loginProfessional = async (req, res) => {
   }
 };    
 
-module.exports = { loginProfessional };
+const signupProfessional = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const existingProfessional = await findProfessionalByEmail(email);
+    if (existingProfessional) {
+      return res.status(409).json({ message: "Email already in use." });
+    }
+
+    const newProfessional  = await createProfessional(req.body);
+    console.log("New professional: ", newProfessional );
+    const fakeToken = `fake-jwt-token-for-${newProfessional.id}`;
+    return res.status(200).json({
+      ...newProfessional,
+      message: "Sign up successful",
+      token: fakeToken,
+    });
+  
+    
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "An error occurred during Sign up." });
+  }
+};
+
+
+module.exports = { loginProfessional, signupProfessional };
