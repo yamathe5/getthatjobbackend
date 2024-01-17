@@ -25,4 +25,34 @@ const findProfessionalByEmail = async (email) => {
   }
 };
 
-module.exports = { findProfessionalByEmail };
+const createProfessional = async (data) => {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const insertQuery = "INSERT INTO professionals (email, password, name, phone, birthdate, linkedin, title, experience, education) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *";
+    const values = [
+      data.email, 
+      data.password, 
+      data.name, 
+      data.phone, 
+      data.birthdate, 
+      data.linkedin, 
+      data.title, 
+      data.experience, 
+      data.education,
+      
+    ];
+    const { rows } = await client.query(insertQuery, values);
+    await client.query("COMMIT");
+    client.release();
+    return rows[0];
+  } catch (error) {
+    await client.query("ROLLBACK");
+    client.release();
+    console.error(error);
+    throw error;
+  }
+};
+
+
+module.exports = { findProfessionalByEmail,  createProfessional};
