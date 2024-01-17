@@ -1,6 +1,6 @@
 const jobModel = require('../models/jobModel');
 
-exports.getJobs = async (req, res) => {
+const getJobs = async (req, res) => {
   try {
     const jobs = await jobModel.getJobs();
     res.status(200).json(jobs);
@@ -9,7 +9,7 @@ exports.getJobs = async (req, res) => {
   }
 };
 
-exports.createJob = async (req, res) => {
+const createJob = async (req, res) => {
   try {
     const newJob = await jobModel.createJob(req.body);
     res.status(201).json(newJob);
@@ -18,7 +18,7 @@ exports.createJob = async (req, res) => {
   }
 };
 
-exports.updateJob = async (req, res) => {
+const updateJob = async (req, res) => {
   const id = req.params.id; // Extraer el ID del trabajo de los parámetros de la ruta
   const jobData = req.body; // Datos del trabajo que quieres actualizar
 
@@ -29,5 +29,8 @@ exports.updateJob = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+
+module.exports = { getJobs, createJob, updateJob };
 
 // Otros métodos de controlador...
