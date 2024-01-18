@@ -2,7 +2,20 @@ const jobModel = require('../models/jobModel');
 
 const getJobs = async (req, res) => {
   try {
+    console.log("xd")
     const jobs = await jobModel.getJobs();
+    res.status(200).json(jobs);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+const getJobsByCompany = async (req, res) => {
+
+  try {
+    // console.log(antes)
+    console.log("============",req.params)
+    const jobs = await jobModel.getJobsByCompany(req.params.companyId);
     res.status(200).json(jobs);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -31,6 +44,6 @@ const updateJob = async (req, res) => {
 };
 
 
-module.exports = { getJobs, createJob, updateJob };
+module.exports = { getJobs, getJobsByCompany, createJob, updateJob };
 
 // Otros métodos de controlador...
