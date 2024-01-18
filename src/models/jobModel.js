@@ -4,6 +4,16 @@ const getJobs = async () => {
   const { rows } = await pool.query("SELECT * FROM jobs ORDER BY id ASC");
   return rows;
 };
+const getJobsByCompany = async (companyId) => {
+  try {
+    const { rows } = await pool.query("SELECT * FROM jobs WHERE companyid = $1 ORDER BY id ASC", [companyId]);
+    console.log(rows,companyId)
+    return rows;
+  } catch (error) {
+    console.error('Error al obtener trabajos por compañía:', error);
+    throw error;
+  }
+};
 
 const createJob = async (jobData) => {
   const {
@@ -20,9 +30,10 @@ const createJob = async (jobData) => {
     candidates,
     track,
     close,
+    companyid,
   } = jobData;
   const { rows } = await pool.query(
-    "INSERT INTO jobs (title, category, type, aboutjob, mandatoryrequirements,optionalrequirements,salaryrange,company,aboutcompany,posteddate,candidates,track,close) VALUES ($1, $2, $3, $4, $5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *",
+    "INSERT INTO jobs (title, category, type, aboutjob, mandatoryrequirements,optionalrequirements,salaryrange,company,aboutcompany,posteddate,candidates,track,close, companyid) VALUES ($1, $2, $3, $4, $5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *",
     [
       title,
       category,
@@ -37,6 +48,7 @@ const createJob = async (jobData) => {
       candidates,
       track,
       close,
+      companyid
     ]
   );
   return rows[0];
@@ -83,6 +95,7 @@ const updateJob = async (id, jobData) => {
 
 module.exports = {
   getJobs,
+  getJobsByCompany,
   createJob,
   updateJob
 };
