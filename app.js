@@ -5,6 +5,7 @@ const jobRoutes = require('./src/routes/jobRoutes');
 const professionalRoutes = require('./src/routes/professionalRoutes');
 const companyRoutes = require("./src/routes/companyRoutes")
 const followingRoutes = require('./src/routes/followingRoutes');
+const applicationRoutes = require('./src/routes/applicationRoutes');
 const port = process.env.PORT || 3000;
 require('dotenv').config();
 
@@ -23,6 +24,7 @@ app.use('/api', jobRoutes);
 app.use('/api/following', followingRoutes);
 app.use('/api/professionals', professionalRoutes);
 app.use('/api/companys', companyRoutes);
+app.use('/api/applications', applicationRoutes);
 
 
 // Iniciar servidor
