@@ -5,7 +5,6 @@ const loginCompany = async (req, res) => {
   const { email, password } = req.body;
   try {
     const company = await findCompanyByEmail(email);
-    console.log(company);
     if (!company) {
       return res.status(404).json({ message: "Company not found." });
     }
@@ -36,7 +35,6 @@ const signupCompany = async (req, res) => {
     }
 
     const newCompany  = await createCompany(req.body);
-    console.log("New company: ", newCompany );
     const fakeToken = `fake-jwt-token-for-${newCompany.id}`;
     return res.status(200).json({
       ...newCompany,

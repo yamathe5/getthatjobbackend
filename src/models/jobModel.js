@@ -7,7 +7,6 @@ const getJobs = async () => {
 const getJobsByCompany = async (companyId) => {
   try {
     const { rows } = await pool.query("SELECT * FROM jobs WHERE companyid = $1 ORDER BY id ASC", [companyId]);
-    console.log(rows,companyId)
     return rows;
   } catch (error) {
     console.error('Error al obtener trabajos por compañía:', error);

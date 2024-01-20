@@ -5,7 +5,6 @@ const loginProfessional = async (req, res) => {
   const { email, password } = req.body;
   try {
     const professional = await findProfessionalByEmail(email);
-    console.log(professional)
     if (!professional) {
       return res.status(404).json({ message: "Professional not found." });
     }
@@ -36,7 +35,6 @@ const signupProfessional = async (req, res) => {
     }
 
     const newProfessional  = await createProfessional(req.body);
-    console.log("New professional: ", newProfessional );
     const fakeToken = `fake-jwt-token-for-${newProfessional.id}`;
     return res.status(200).json({
       ...newProfessional,
