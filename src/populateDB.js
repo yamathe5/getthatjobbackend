@@ -16,6 +16,7 @@ const createTables = async () => {
     await client.query("BEGIN");
     // Drop existing tables if they exist
     await client.query("DROP TABLE IF EXISTS applications;");
+    await client.query("DROP TABLE IF EXISTS followings;");
     await client.query("DROP TABLE IF EXISTS professionals;");
     await client.query("DROP TABLE IF EXISTS jobs;");
     await client.query("DROP TABLE IF EXISTS companys;");
@@ -75,11 +76,20 @@ const createTables = async () => {
     date DATE NOT NULL,
     status VARCHAR(255) NOT NULL
   );`;
+    const createFollowingsTableQuery = `
+  CREATE TABLE IF NOT EXISTS followings (
+    id SERIAL PRIMARY KEY,
+    professionalid INTEGER REFERENCES professionals(id) ON DELETE CASCADE,
+    companyid INTEGER REFERENCES companys(id) ON DELETE CASCADE,
+    jobid INTEGER REFERENCES jobs(id) ON DELETE CASCADE,
+    following BOOLEAN
+  );`;
 
     await client.query(createCompanysTableQuery);
     await client.query(createProfessionalsTableQuery);
     await client.query(createJobsTableQuery);
     await client.query(createApplicationsTableQuery);
+    await client.query(createFollowingsTableQuery);
 
     await client.query("COMMIT");
   } catch (e) {
@@ -265,6 +275,47 @@ const insertFakeApplicationsData = async (data) => {
   }
 };
 
+const createFakeFollowing = () => {
+  const includeCompany = faker.datatype.boolean();
+
+  
+  return {
+    professionalid: faker.datatype.number({ min: 1, max: 10 }),
+    ...(includeCompany
+      ? { companyid: faker.datatype.number({ min: 1, max: 10 }) }
+      : { jobid: faker.datatype.number({ min: 1, max: 10 }) }),
+    following: faker.datatype.boolean(),
+  };
+};
+
+const insertFakeFollowingData = async (data) => {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const insertQuery = `
+      INSERT INTO followings (professionalid, companyid, jobid, following)
+      VALUES ($1, $2, $3, $4)
+      RETURNING *;
+    `;
+    const values = [
+      data.professionalid,
+      data.companyid,
+      data.jobid,
+      data.following,
+    ];
+
+    const { rows } = await client.query(insertQuery, values);
+    await client.query("COMMIT");
+    return rows[0]; // Return the inserted company data
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+};
+
+
 (async () => {
   try {
     await createTables(); // Asegúrate de que esta promesa se resuelve antes de continuar
@@ -289,6 +340,10 @@ const insertFakeApplicationsData = async (data) => {
     const fakeApplications = Array.from({ length: 10 }, createFakeApplications);
     for (const application of fakeApplications) {
       await insertFakeApplicationsData(application);
+    }
+    const fakeFollowing = Array.from({ length: 10 }, createFakeFollowing);
+    for (const following of fakeFollowing) {
+      await insertFakeFollowingData(following);
     }
 
     console.log("Fake jobs inserted into database");
