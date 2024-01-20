@@ -71,7 +71,7 @@ const createTables = async () => {
     const createApplicationsTableQuery = `
   CREATE TABLE IF NOT EXISTS applications (
     id SERIAL PRIMARY KEY,
-    companyid INTEGER REFERENCES companys(id) ON DELETE CASCADE,
+    jobid INTEGER REFERENCES jobs(id) ON DELETE CASCADE,
     professionalid INTEGER REFERENCES professionals(id) ON DELETE CASCADE,
     date DATE NOT NULL,
     status VARCHAR(255) NOT NULL
@@ -242,7 +242,7 @@ const createFakeApplications = () => {
   const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
 
   return {
-    companyid: faker.datatype.number({ min: 1, max: 10 }),
+    jobid: faker.datatype.number({ min: 1, max: 10 }),
     professionalid: faker.datatype.number({ min: 1, max: 10 }),
     date: faker.date.past(2).toISOString().split("T")[0],
     status: randomStatus,
@@ -254,12 +254,12 @@ const insertFakeApplicationsData = async (data) => {
   try {
     await client.query("BEGIN");
     const insertQuery = `
-      INSERT INTO applications (companyid, professionalid, date, status)
+      INSERT INTO applications (jobid, professionalid, date, status)
       VALUES ($1, $2, $3, $4)
       RETURNING *;
     `;
     const values = [
-      data.companyid,
+      data.jobid,
       data.professionalid,
       data.date,
       data.status,
