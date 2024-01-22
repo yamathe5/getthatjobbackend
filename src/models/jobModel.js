@@ -22,7 +22,8 @@ const createJob = async (jobData) => {
     aboutjob,
     mandatoryrequirements,
     optionalrequirements,
-    salaryrange,
+    minsalary,
+    maxsalary,
     company,
     aboutcompany,
     posteddate,
@@ -32,7 +33,7 @@ const createJob = async (jobData) => {
     companyid,
   } = jobData;
   const { rows } = await pool.query(
-    "INSERT INTO jobs (title, category, type, aboutjob, mandatoryrequirements,optionalrequirements,salaryrange,company,aboutcompany,posteddate,candidates,track,close, companyid) VALUES ($1, $2, $3, $4, $5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *",
+    "INSERT INTO jobs (title, category, type, aboutjob, mandatoryrequirements,optionalrequirements,minsalary,maxsalary,company,aboutcompany,posteddate,candidates,track,close, companyid) VALUES ($1, $2, $3, $4, $5,$6,$7,$8,$9,$10,$11,$12,$13,$14, $15) RETURNING *",
     [
       title,
       category,
@@ -40,7 +41,8 @@ const createJob = async (jobData) => {
       aboutjob,
       mandatoryrequirements,
       optionalrequirements,
-      salaryrange,
+      minsalary,
+      maxsalary,
       company,
       aboutcompany,
       posteddate,
@@ -61,7 +63,8 @@ const updateJob = async (id, jobData) => {
     aboutjob,
     mandatoryrequirements,
     optionalrequirements,
-    salaryrange,
+    minsalary,
+    maxsalary,
     company,
     aboutcompany,
     posteddate,
@@ -70,7 +73,7 @@ const updateJob = async (id, jobData) => {
     close,
   } = jobData;
   const { rows } = await pool.query(
-    "UPDATE jobs SET title = $1, category = $2, type = $3, aboutjob = $4, mandatoryrequirements = $5, optionalrequirements = $6, salaryrange = $7, company = $8, aboutcompany = $9, posteddate = $10, candidates = $11, track = $12, close = $13 WHERE id = $14 RETURNING *",
+    "UPDATE jobs SET title = $1, category = $2, type = $3, aboutjob = $4, mandatoryrequirements = $5, optionalrequirements = $6, minsalary = $7,maxsalary = $8,  company = $9, aboutcompany = $10, posteddate = $11, candidates = $12, track = $13, close = $14 WHERE id = $15 RETURNING *",
     [
       title,
       category,
@@ -78,7 +81,8 @@ const updateJob = async (id, jobData) => {
       aboutjob,
       mandatoryrequirements,
       optionalrequirements,
-      salaryrange,
+      minsalary,
+      maxsalary,
       company,
       aboutcompany,
       new Date(posteddate), // Asegúrate de que posteddate sea una fecha ISO válida o conviértela a objeto Date

@@ -29,7 +29,8 @@ const createTables = async () => {
       company VARCHAR(255),
       category VARCHAR(50),
       type VARCHAR(50),
-      salaryRange VARCHAR(50),
+      minSalary VARCHAR(50),
+      maxSalary VARCHAR(50),
       aboutCompany TEXT,
       aboutJob TEXT,
       mandatoryRequirements TEXT,
@@ -145,18 +146,24 @@ const insertFakeProfessionalData = async (data) => {
 };
 
 const createFakeJob = () => {
+
+  const type = faker.datatype.boolean();
+
+  const minSalary = faker.datatype.number({ min: 500, max: 3000 });
+  const maxSalary = minSalary + faker.datatype.number({ min: 0, max: 1000 });
+
   return {
     title: faker.name.jobTitle(),
     company: faker.company.companyName(),
     category: faker.name.jobType(),
-    type: "Full-time",
-    salaryRange: `$${faker.finance.amount(30000, 100000, 0)}`,
+    type: type? "Full-time" : "Part-time",
+    minSalary: `${minSalary}`,
+    maxSalary: `${maxSalary}`,
     aboutCompany: faker.company.catchPhrase(),
     aboutJob: faker.name.jobDescriptor(),
     mandatoryRequirements: faker.lorem.paragraph(),
     optionalRequirements: faker.lorem.paragraph(),
     postedDate: faker.date.recent(),
-    // Assuming candidates, track, and close are boolean or numeric types
     candidates: faker.datatype.number({ min: 0, max: 100 }),
     track: faker.datatype.number({ min: 0, max: 100 }),
     close: faker.datatype.boolean(),
@@ -169,15 +176,16 @@ const InsertFakeJobData = async (data) => {
   try {
     await client.query("BEGIN");
     const insertQuery = `
-      INSERT INTO jobs (title, company, type, category, salaryrange, aboutcompany, aboutjob, mandatoryrequirements, optionalrequirements, posteddate, candidates, track, close, companyid)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      INSERT INTO jobs (title, company, type, category, minsalary, maxsalary, aboutcompany, aboutjob, mandatoryrequirements, optionalrequirements, posteddate, candidates, track, close, companyid)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
     `;
     const values = [
       data.title,
       data.company,
       data.type,
       data.category,
-      data.salaryRange,
+      data.minSalary,
+      data.maxSalary,
       data.aboutCompany,
       data.aboutJob,
       data.mandatoryRequirements,
@@ -188,6 +196,7 @@ const InsertFakeJobData = async (data) => {
       data.close,
       data.companyid,
     ];
+    // console.log(values)
     await client.query(insertQuery, values);
     await client.query("COMMIT");
   } catch (e) {

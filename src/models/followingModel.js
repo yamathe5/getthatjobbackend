@@ -12,7 +12,8 @@ const getFollowings = async (id) => {
     j.company AS jobCompanyName,
     j.category,
     j.type,
-    j.salaryrange,
+    j.minsalary,
+    j.maxsalary,
     c.company AS companyName,
     (SELECT COUNT(*) FROM jobs WHERE companyid = f.companyid) AS jobCount
 FROM 
