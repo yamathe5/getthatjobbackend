@@ -70,13 +70,15 @@ const createTables = async () => {
     );`;
 
     const createApplicationsTableQuery = `
-  CREATE TABLE IF NOT EXISTS applications (
-    id SERIAL PRIMARY KEY,
-    jobid INTEGER REFERENCES jobs(id) ON DELETE CASCADE,
-    professionalid INTEGER REFERENCES professionals(id) ON DELETE CASCADE,
-    date DATE NOT NULL,
-    status VARCHAR(255) NOT NULL
-  );`;
+    CREATE TABLE IF NOT EXISTS applications (
+      id SERIAL PRIMARY KEY,
+      jobid INTEGER REFERENCES jobs(id) ON DELETE CASCADE,
+      professionalid INTEGER REFERENCES professionals(id) ON DELETE CASCADE,
+      professionalexperience TEXT,
+      whyareyouinterested TEXT,
+      date DATE NOT NULL,
+      status VARCHAR(255) NOT NULL
+    );`;
     const createFollowingsTableQuery = `
   CREATE TABLE IF NOT EXISTS followings (
     id SERIAL PRIMARY KEY,
@@ -146,7 +148,6 @@ const insertFakeProfessionalData = async (data) => {
 };
 
 const createFakeJob = () => {
-
   const type = faker.datatype.boolean();
 
   const minSalary = faker.datatype.number({ min: 500, max: 3000 });
@@ -156,7 +157,7 @@ const createFakeJob = () => {
     title: faker.name.jobTitle(),
     company: faker.company.companyName(),
     category: faker.name.jobType(),
-    type: type? "Full-time" : "Part-time",
+    type: type ? "Full-time" : "Part-time",
     minSalary: `${minSalary}`,
     maxSalary: `${maxSalary}`,
     aboutCompany: faker.company.catchPhrase(),
@@ -167,7 +168,7 @@ const createFakeJob = () => {
     candidates: faker.datatype.number({ min: 0, max: 100 }),
     track: faker.datatype.number({ min: 0, max: 100 }),
     close: faker.datatype.boolean(),
-    companyid: faker.datatype.number({ min: 1, max: 10 }),
+    companyid: faker.datatype.number({ min: 1, max: 4 }),
   };
 };
 
@@ -252,7 +253,9 @@ const createFakeApplications = () => {
 
   return {
     jobid: faker.datatype.number({ min: 1, max: 10 }),
-    professionalid: faker.datatype.number({ min: 1, max: 10 }),
+    professionalid: faker.datatype.number({ min: 1, max: 2 }),
+    professionalexperience: faker.lorem.paragraphs(2),
+    whyareyouinterested: faker.lorem.sentence(),
     date: faker.date.past(2).toISOString().split("T")[0],
     status: randomStatus,
   };
@@ -263,13 +266,15 @@ const insertFakeApplicationsData = async (data) => {
   try {
     await client.query("BEGIN");
     const insertQuery = `
-      INSERT INTO applications (jobid, professionalid, date, status)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO applications (jobid, professionalid, professionalexperience, whyareyouinterested, date, status)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *;
     `;
     const values = [
       data.jobid,
       data.professionalid,
+      data.professionalexperience,
+      data.whyareyouinterested,
       data.date,
       data.status,
     ];
@@ -287,13 +292,12 @@ const insertFakeApplicationsData = async (data) => {
 const createFakeFollowing = () => {
   const includeCompany = faker.datatype.boolean();
 
-  
   return {
-    professionalid: faker.datatype.number({ min: 1, max: 10 }),
+    professionalid: faker.datatype.number({ min: 1, max: 2 }),
     ...(includeCompany
-      ? { companyid: faker.datatype.number({ min: 1, max: 10 }) }
+      ? { companyid: faker.datatype.number({ min: 1, max: 4 }) }
       : { jobid: faker.datatype.number({ min: 1, max: 10 }) }),
-    following: faker.datatype.boolean(),
+    following: true,
   };
 };
 
@@ -324,21 +328,19 @@ const insertFakeFollowingData = async (data) => {
   }
 };
 
-
 (async () => {
   try {
     await createTables(); // Asegúrate de que esta promesa se resuelve antes de continuar
     console.log("All tables has been created");
 
-    
     const fakeProfessionals = Array.from(
-      { length: 10 },
+      { length: 2 },
       createFakeProfessional
     );
     for (const professional of fakeProfessionals) {
       await insertFakeProfessionalData(professional);
     }
-    const fakeCompanys = Array.from({ length: 10 }, createFakeCompanys);
+    const fakeCompanys = Array.from({ length: 4 }, createFakeCompanys);
     for (const company of fakeCompanys) {
       await insertFakeCompanyData(company);
     }
