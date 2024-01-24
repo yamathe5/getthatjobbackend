@@ -2,30 +2,66 @@ const pool = require("../db"); // Importa el archivo de configuración de la bas
 
 const getApplicationsByProfessional = async (id) => {
   try {
-    const { rows } = await pool.query("SELECT * FROM applications JOIN jobs on jobid = jobs.id WHERE professionalid = $1 ORDER BY applications.id ASC " , [id]);
-  return rows;
-  } catch (error) {
-    console.error('Error al obtener aplicaciones por professional:', error);
-    throw error;
-  }
-  
-};
-
-const getApplicationsByCompany = async (id)=>{
-  try {
-    const { rows } = await pool.query("SELECT * FROM applications WHERE companyId = $1 ORDER BY id ASC", [id]);
-  return rows;
-  } catch (error) {
-    console.error('Error al obtener aplicaciones por professional:', error);
-    throw error;
-  }
-}
-const getJobsByCompany = async (companyId) => {
-  try {
-    const { rows } = await pool.query("SELECT * FROM jobs WHERE companyid = $1 ORDER BY id ASC", [companyId]);
+    const { rows } = await pool.query(
+      "SELECT applications.id as applicationsid, *  FROM applications JOIN jobs ON jobid = jobs.id WHERE professionalid = $1 ORDER BY applications.id ASC ",
+      [id]
+    );
     return rows;
   } catch (error) {
-    console.error('Error al obtener trabajos por compañía:', error);
+    console.error("Error al obtener aplicaciones por professional:", error);
+    throw error;
+  }
+};
+
+const getApplicationsByCompany = async (id) => {
+  try {
+    const { rows } = await pool.query(
+      "SELECT * FROM applications WHERE companyId = $1 ORDER BY id ASC",
+      [id]
+    );
+    return rows;
+  } catch (error) {
+    console.error("Error al obtener aplicaciones por professional:", error);
+    throw error;
+  }
+};
+
+const createApplication = async (body) =>{
+  const client = await pool.connect()
+  try {
+    console.log(body)
+    await client.query("BEGIN")
+    const query = `INSERT INTO applications (jobid, professionalid, professionalexperience, whyareyouinterested, date, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`;
+    const values = [
+      body.jobid,
+      body.professionalid,
+      body.professionalexperience,
+      body.whyareyouinterested,
+      body.date,
+      body.status
+    ]
+    const {rows}=await client.query(query, values)
+    await client.query("COMMIT")
+    client.release();
+    
+    return rows
+  } catch (error) {
+    console.error(error);
+    await client.query("ROLLBACK")
+    client.release();
+    return null; // In case of error, return null or handle accordingly
+  }
+}
+
+const getJobsByCompany = async (companyId) => {
+  try {
+    const { rows } = await pool.query(
+      "SELECT * FROM jobs WHERE companyid = $1 ORDER BY id ASC",
+      [companyId]
+    );
+    return rows;
+  } catch (error) {
+    console.error("Error al obtener trabajos por compañía:", error);
     throw error;
   }
 };
@@ -65,7 +101,7 @@ const createJob = async (jobData) => {
       candidates,
       track,
       close,
-      companyid
+      companyid,
     ]
   );
   return rows[0];
@@ -112,12 +148,23 @@ const updateJob = async (id, jobData) => {
   return rows[0];
 };
 
+const deleteApplication = async (professionalId, applicationId) => {
+  try {
+    const query = `DELETE FROM applications WHERE id = $1`;
+    const result = await pool.query(query, [applicationId]);
+    return result.rowCount; // Retorna la cantidad de filas eliminadas
+  } catch (error) {
+    console.error(error);
+    throw error; // Es mejor lanzar el error y manejarlo más arriba en el stack de llamadas
+  }
+};
+
 module.exports = {
+  createApplication,
   getApplicationsByProfessional,
   getApplicationsByCompany,
-
-
+  deleteApplication,
   getJobsByCompany,
   createJob,
-  updateJob
+  updateJob,
 };
