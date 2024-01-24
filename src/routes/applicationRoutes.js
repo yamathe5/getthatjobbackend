@@ -16,6 +16,6 @@ router.post('/jobs/:jobId/apply', applicationsController.createApplication);
 router.put('/applications/:applicationId', applicationsController.updateApplication);
 
 // Eliminar una aplicación
-router.delete('/applications/:applicationId', applicationsController.deleteApplication);
+router.delete('/professionals/:professionalId/applications/:applicationId', applicationsController.deleteApplication);
 
 module.exports = router;
