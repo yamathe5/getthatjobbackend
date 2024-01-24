@@ -1,9 +1,56 @@
 const pool = require("../db"); // Importa el archivo de configuración de la base de datos
 
+
+
+const getJobWithFollowing = async(professionalId, jobId)=>{
+  console.log(professionalId, jobId)
+  const query = `
+    SELECT 
+      j.*, 
+      f.id as followingid,
+      CASE 
+        WHEN f.id IS NOT NULL THEN TRUE
+        ELSE FALSE
+      END as following
+    FROM 
+      jobs j
+    LEFT JOIN 
+      followings f ON j.id = f.jobid AND f.professionalid = $2
+    WHERE 
+      j.id = $1;
+  `;
+  const { rows } = await pool.query(query, [jobId, professionalId]);
+  return rows;
+
+}
 const getJobs = async () => {
   const { rows } = await pool.query("SELECT * FROM jobs ORDER BY id ASC");
   return rows;
 };
+
+const getJobsWithFollowing = async (professionalId) => {
+  // const { rows } = await pool.query("SELECT * FROM jobs ORDER BY id ASC");
+  const query = `
+  SELECT 
+    j.*, 
+    f.id as followingid,
+    CASE 
+      WHEN f.jobid IS NOT NULL THEN TRUE
+      ELSE FALSE
+    END as following
+  FROM 
+    jobs j
+  LEFT JOIN 
+    followings f ON f.jobid = j.id AND f.professionalid = $1
+  ORDER BY 
+    j.id ASC;
+`;
+
+  const { rows } = await pool.query(query, [professionalId]);
+
+  return rows;
+
+}
 const getJobsByCompany = async (companyId) => {
   try {
     const { rows } = await pool.query("SELECT * FROM jobs WHERE companyid = $1 ORDER BY id ASC", [companyId]);
@@ -97,7 +144,9 @@ const updateJob = async (id, jobData) => {
 };
 
 module.exports = {
+  getJobWithFollowing,
   getJobs,
+  getJobsWithFollowing,
   getJobsByCompany,
   createJob,
   updateJob
