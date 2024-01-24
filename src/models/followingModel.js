@@ -58,7 +58,6 @@ const deleteFollow = async (id) => {
   try {
     const query = `DELETE FROM followings WHERE id = $1`;
     const result = await pool.query(query, [id]);
-    console.log("result: ", result)
     return result.rowCount; // Retorna la cantidad de filas eliminadas
   } catch (error) {
     console.error(error);
