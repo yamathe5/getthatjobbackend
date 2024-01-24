@@ -1,8 +1,33 @@
 const jobModel = require('../models/jobModel');
 
+const getJobById = async (req,res) =>{
+  try {
+    const {professionalId, jobId} = req.params;
+    if (jobId) {
+      // Realiza la consulta que también verifica los followings
+      job = await jobModel.getJobWithFollowing(professionalId, jobId);
+    } else {
+      // Realiza la consulta que solo obtiene los trabajos
+      res.status(500).json({ error: "Not found" });
+    }
+
+    res.status(200).json(job);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
 const getJobs = async (req, res) => {
   try {
-    const jobs = await jobModel.getJobs();
+    const professionalId = req.params.professionalId;
+    if (professionalId) {
+      // Realiza la consulta que también verifica los followings
+      jobs = await jobModel.getJobsWithFollowing(professionalId);
+    } else {
+      // Realiza la consulta que solo obtiene los trabajos
+     jobs = await jobModel.getJobs();
+    }
+
     res.status(200).json(jobs);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -41,6 +66,6 @@ const updateJob = async (req, res) => {
 };
 
 
-module.exports = { getJobs, getJobsByCompany, createJob, updateJob };
+module.exports = { getJobById, getJobs, getJobsByCompany, createJob, updateJob };
 
 // Otros métodos de controlador...
