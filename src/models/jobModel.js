@@ -1,9 +1,7 @@
 const pool = require("../db"); // Importa el archivo de configuración de la base de datos
 
-
-
-const getJobWithFollowing = async(professionalId, jobId)=>{
-  console.log(professionalId, jobId)
+const getJobWithFollowing = async (professionalId, jobId) => {
+  console.log(professionalId, jobId);
   const query = `
     SELECT 
       j.*, 
@@ -21,8 +19,7 @@ const getJobWithFollowing = async(professionalId, jobId)=>{
   `;
   const { rows } = await pool.query(query, [jobId, professionalId]);
   return rows;
-
-}
+};
 const getJobs = async () => {
   const { rows } = await pool.query("SELECT * FROM jobs ORDER BY id ASC");
   return rows;
@@ -34,14 +31,21 @@ const getJobsWithFollowing = async (professionalId) => {
   SELECT 
     j.*, 
     f.id as followingid,
+    a.id as appliedid,
     CASE 
       WHEN f.jobid IS NOT NULL THEN TRUE
       ELSE FALSE
-    END as following
+    END as following,
+    CASE 
+      WHEN a.jobid IS NOT NULL THEN TRUE
+      ELSE FALSE
+    END as applied
   FROM 
     jobs j
   LEFT JOIN 
     followings f ON f.jobid = j.id AND f.professionalid = $1
+    LEFT JOIN 
+    applications a ON j.id = a.jobid AND a.professionalid = $1
   ORDER BY 
     j.id ASC;
 `;
@@ -49,17 +53,65 @@ const getJobsWithFollowing = async (professionalId) => {
   const { rows } = await pool.query(query, [professionalId]);
 
   return rows;
-
-}
+};
 const getJobsByCompany = async (companyId) => {
   try {
-    const { rows } = await pool.query("SELECT * FROM jobs WHERE companyid = $1 ORDER BY id ASC", [companyId]);
+    const { rows } = await pool.query(
+      // "SELECT * FROM jobs WHERE companyid = $1 ORDER BY id ASC",
+      `SELECT 
+      jobs.*,
+      COUNT(applications.professionalid) AS count_candidates
+    FROM 
+      jobs 
+    LEFT JOIN 
+      applications ON applications.jobid = jobs.id
+    WHERE 
+      jobs.companyid = $1
+    GROUP BY 
+      jobs.id
+    ORDER BY 
+      jobs.id ASC;
+    `,
+      [companyId]
+    );
+    console.log(rows)
     return rows;
   } catch (error) {
-    console.error('Error al obtener trabajos por compañía:', error);
+    console.error("Error al obtener trabajos por compañía:", error);
     throw error;
   }
 };
+
+const getJobsByCompanyAndId = async (companyId, jobId) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT 
+        jobs.*, 
+        companys.company, 
+        companys.email, 
+        companys.website, 
+        companys.about,
+        COUNT(applications.id) AS candidate_count
+      FROM 
+        jobs
+      JOIN 
+        companys ON jobs.companyid = companys.id
+      LEFT JOIN 
+        applications ON applications.jobid = jobs.id
+      WHERE 
+        jobs.companyid = $1 AND jobs.id = $2
+      GROUP BY 
+        jobs.id, companys.id
+      ORDER BY 
+        jobs.id ASC`,
+      [companyId, jobId]
+    );
+    return rows[0];
+  } catch (error) {
+    console.error("Error al obtener trabajos por compañía y ID:", error);
+    throw error;
+  }
+}
 
 const createJob = async (jobData) => {
   const {
@@ -96,7 +148,7 @@ const createJob = async (jobData) => {
       candidates,
       track,
       close,
-      companyid
+      companyid,
     ]
   );
   return rows[0];
@@ -145,9 +197,10 @@ const updateJob = async (id, jobData) => {
 
 module.exports = {
   getJobWithFollowing,
+  getJobsByCompanyAndId,
   getJobs,
   getJobsWithFollowing,
   getJobsByCompany,
   createJob,
-  updateJob
+  updateJob,
 };
