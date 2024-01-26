@@ -14,6 +14,11 @@ const getFollowings = async (req, res) => {
 const createFollow = async (req, res) => {
   const {  professionalId } = req.params;
   try {
+    const existinFollow = await followingModel.findExistingFollowing(professionalId, req.body);
+    if (existinFollow) {
+      return res.status(409).json({ message: "Follow already exist" });
+    }
+
     const jobs = await followingModel.createFollow( professionalId, req.body);
     res.status(200).json(jobs);
   } catch (err) {
