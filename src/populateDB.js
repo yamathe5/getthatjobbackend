@@ -76,7 +76,7 @@ const createTables = async () => {
       professionalid INTEGER REFERENCES professionals(id) ON DELETE CASCADE,
       professionalexperience TEXT,
       whyareyouinterested TEXT,
-      date DATE NOT NULL,
+      date TIMESTAMP NOT NULL,
       status VARCHAR(255) NOT NULL
     );`;
     const createFollowingsTableQuery = `
