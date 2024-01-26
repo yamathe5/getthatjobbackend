@@ -3,6 +3,20 @@
 const faker = require("faker");
 const pool = require("../db"); // Importa el archivo de configuración de la base de datos
 
+const findExistingFollowing = async (professionalId, body) => {
+  try {
+    const followings = await getFollowings(professionalId); // Await the Promise from getProfessionals
+    return followings.find(
+      (following) =>
+         (following.companyid === body.companyid ||
+          following.jobid === body.jobid)
+    );
+  } catch (error) {
+    console.error(error);
+    return null; // In case of error, return null or handle accordingly
+  }
+};
+
 const getFollowings = async (id) => {
   try {
     const query = `
@@ -31,25 +45,20 @@ WHERE
   }
 };
 
-const createFollow = async ( professionalid, body) => {
-  const client = await pool.connect()
+const createFollow = async (professionalid, body) => {
+  const client = await pool.connect();
   try {
-    await client.query("BEGIN")
+    await client.query("BEGIN");
     const query = `INSERT INTO followings (professionalid, companyid, jobid, following) VALUES ($1, $2, $3, $4) RETURNING *`;
-    const values = [
-      professionalid,
-      body.companyid,
-      body.jobid,
-      body.following
-    ]
-    const {rows}=await client.query(query, values)
-    await client.query("COMMIT")
+    const values = [professionalid, body.companyid, body.jobid, body.following];
+    const { rows } = await client.query(query, values);
+    await client.query("COMMIT");
     client.release();
-    
-    return rows
+
+    return rows;
   } catch (error) {
     console.error(error);
-    await client.query("ROLLBACK")
+    await client.query("ROLLBACK");
     client.release();
     return null; // In case of error, return null or handle accordingly
   }
@@ -65,33 +74,10 @@ const deleteFollow = async (id) => {
   }
 };
 
-// const createProfessional = async (data) => {
-//   const client = await pool.connect();
-//   try {
-//     await client.query("BEGIN");
-//     const insertQuery = "INSERT INTO professionals (email, password, name, phone, birthdate, linkedin, title, experience, education) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *";
-//     const values = [
-//       data.email,
-//       data.password,
-//       data.name,
-//       data.phone,
-//       data.birthdate,
-//       data.linkedin,
-//       data.title,
-//       data.experience,
-//       data.education,
 
-//     ];
-//     const { rows } = await client.query(insertQuery, values);
-//     await client.query("COMMIT");
-//     client.release();
-//     return rows[0];
-//   } catch (error) {
-//     await client.query("ROLLBACK");
-//     client.release();
-//     console.error(error);
-//     throw error;
-//   }
-// };
-
-module.exports = { getFollowings, createFollow, deleteFollow };
+module.exports = {
+  findExistingFollowing,
+  getFollowings,
+  createFollow,
+  deleteFollow,
+};
