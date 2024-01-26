@@ -43,6 +43,14 @@ const getJobsByCompany = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+const getJobsByCompanyAndId = async (req,res) =>{
+  try {
+    const jobs = await jobModel.getJobsByCompanyAndId(req.params.companyId, req.params.jobId);
+    res.status(200).json(jobs);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
 
 const createJob = async (req, res) => {
   try {
@@ -66,6 +74,6 @@ const updateJob = async (req, res) => {
 };
 
 
-module.exports = { getJobById, getJobs, getJobsByCompany, createJob, updateJob };
+module.exports = { getJobById, getJobs, getJobsByCompany, getJobsByCompanyAndId, createJob, updateJob };
 
 // Otros métodos de controlador...
